@@ -8,6 +8,8 @@
 
 ​	Enemy track, attack player, drop loot on death
 
+​	new enemy: exploder (like creeper in minecraft)
+
 #### Control:
 
 ​	move: wasd

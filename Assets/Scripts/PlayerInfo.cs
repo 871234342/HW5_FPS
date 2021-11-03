@@ -8,7 +8,7 @@ public class PlayerInfo : MonoBehaviour
     public float cameraSpeed = 1.0f;
     public float sprintMultiplier = 1.5f;
     public float jumpSpeed = 2f;
-    public LayerMask shootLayerMask, jumpLayerMask;
+    public LayerMask shootMask, teraainMask;
 
     public float attackSpeed = 1f;
     public float reloadSpeed = 1f;
@@ -19,7 +19,7 @@ public class PlayerInfo : MonoBehaviour
     public int ammo = 10;
     public int magazineCap = 10;
     public int totalAmmo = 100;
-    public float health = 100f;
+    public int health = 100;
     
     Rigidbody rb;
     Collider col;
@@ -92,11 +92,12 @@ public class PlayerInfo : MonoBehaviour
                 ammo--;
                 totalAmmo--;
                 attackCooldown = 1f / attackSpeed;
-                if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootLayerMask))
+                if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootMask))
                 {
+                    Debug.Log("Hit " + hit.collider.name);
                     hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(20);
                 }
-                if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, jumpLayerMask))
+                if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, teraainMask))
                 {
                 }
                 Debug.DrawLine(this.transform.position, this.transform.position + mainCamera.transform.forward * 100f, Color.red, 2f);
@@ -140,7 +141,7 @@ public class PlayerInfo : MonoBehaviour
         bound.y = 0.1f;
         bound.z -= 0.1f;
 
-        return Physics.CheckBox(boxCenter, bound, Quaternion.identity, jumpLayerMask);
+        return Physics.CheckBox(boxCenter, bound, Quaternion.identity, teraainMask);
     }
 
     private void Reload()
@@ -151,7 +152,7 @@ public class PlayerInfo : MonoBehaviour
         ammo = magazineCap;
     }
 
-    public void Hurt(float damage)
+    public void Hurt(int damage)
     {
         health -= damage;
         Debug.Log("Got hurt");

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyMove : MonoBehaviour
+public class EnemyControl : MonoBehaviour
 {
-    public float speed = 2;
     public float detectRadius = 7f;
     public float chaseRadius = 21f;
-    public float attackDamage = 10;
+    public int attackDamage = 10;
 
     public float attackSpeed = 1f;
     private float attackCooldown = 0f;
@@ -22,7 +21,8 @@ public class EnemyMove : MonoBehaviour
     {
         target = PlayerManager.instance.player;
         agent = GetComponent<NavMeshAgent>();
-        agent.destination = target.transform.position;
+        if (agent.enabled) agent.destination = target.transform.position;
+        //agent.enabled = false;
     }
 
     // Update is called once per frame
@@ -31,29 +31,34 @@ public class EnemyMove : MonoBehaviour
         float distance = Vector3.Distance(target.transform.position, transform.position);
         attackCooldown -= Time.deltaTime;
 
-        if (distance <= detectRadius)
+        //if (!agent.enabled) Debug.Log("Agent disabled");
+
+        if (agent.enabled)
         {
-            alerted = true;
-            agent.SetDestination(target.transform.position);
-        }
-        else if (alerted && distance <= chaseRadius)
-        {
-            agent.SetDestination(target.transform.position);
-        }
-        else
-        {
-            alerted = false;
-            agent.SetDestination(transform.position);
-        }
-        if (distance <= agent.stoppingDistance)
-        {
-            FaceTarget();
-            if (attackCooldown <= 0)
+            if (distance <= detectRadius)
             {
-                attackCooldown = 1f / attackSpeed;
-                Attack(attackDamage);
+                alerted = true;
+                agent.SetDestination(target.transform.position);
             }
-            //attack target
+            else if (alerted && distance <= chaseRadius)
+            {
+                agent.SetDestination(target.transform.position);
+            }
+            else
+            {
+                alerted = false;
+                agent.SetDestination(transform.position);
+            }
+
+            if (distance <= agent.stoppingDistance)
+            {
+                FaceTarget();
+                if (attackCooldown <= 0)
+                {
+                    attackCooldown = 1f / attackSpeed;
+                    Attack(attackDamage);
+                }
+            }
         }
     }
 
@@ -72,7 +77,7 @@ public class EnemyMove : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, chaseRadius);
     }
 
-    void Attack(float attackDamage)
+    void Attack(int attackDamage)
     {
         target.GetComponent<PlayerInfo>().Hurt(attackDamage);
     }
