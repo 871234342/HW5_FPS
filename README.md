@@ -10,6 +10,12 @@
 
 ​	new enemy: exploder (like creeper in minecraft)
 
+​	UI function complete (visual left)
+
+​	Goal area spawn
+
+​	start scene, pause, dead, win screen function complete
+
 #### Control:
 
 ​	move: wasd

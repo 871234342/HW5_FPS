@@ -31,7 +31,8 @@ public class EnemyInfo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //isGrounded = IsGrounded();
+        if (PlayerManager.gamePaused) return;
+
         if (transform.position.y <= -1f)
         {
             Destroy(this);

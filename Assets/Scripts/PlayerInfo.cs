@@ -10,6 +10,7 @@ public class PlayerInfo : MonoBehaviour
     public float jumpSpeed = 2f;
     public LayerMask shootMask, teraainMask;
 
+    public int attackDamage;
     public float attackSpeed = 1f;
     public float reloadSpeed = 1f;
     private float attackCooldown = 0f;
@@ -21,7 +22,11 @@ public class PlayerInfo : MonoBehaviour
     public int totalAmmo = 100;
     public int maxHealth = 100;
     public int health = 100;
-    
+
+    [SerializeField] GameObject UI;
+    [SerializeField] GameObject deadScreen;
+    [SerializeField] GameObject ShootEffect;
+    [SerializeField] GameObject HitEffect;
     Rigidbody rb;
     Collider col;
     Vector3 velocity;
@@ -48,6 +53,23 @@ public class PlayerInfo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (PlayerManager.gamePaused)
+        {
+            return;
+        }
+
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+            PlayerManager.instance.upgragePanel.SetActive(true);
+            return;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            PlayerManager.instance.upgragePanel.SetActive(false);
+        }
+
         w = Input.GetKey(KeyCode.W);
         a = Input.GetKey(KeyCode.A);
         s = Input.GetKey(KeyCode.S);
@@ -93,10 +115,12 @@ public class PlayerInfo : MonoBehaviour
                 ammo--;
                 totalAmmo--;
                 attackCooldown = 1f / attackSpeed;
+                Instantiate(ShootEffect, mainCamera.transform.Find("Emiter").position, Quaternion.identity);
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootMask))
                 {
-                    Debug.Log("Hit " + hit.collider.name);
-                    if (hit.collider.gameObject.tag == "Enemy") hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(20);
+                    //Debug.Log("Hit " + hit.collider.name);
+                    if (hit.collider.gameObject.tag == "Enemy") hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(attackDamage);
+                    Instantiate(HitEffect, hit.point, Quaternion.identity);
                 }
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, teraainMask))
                 {
@@ -159,14 +183,57 @@ public class PlayerInfo : MonoBehaviour
         //Debug.Log("Take " + damage + " damage");
         if (health <= 0)
         {
-            Debug.Log("You're Dead");
+            this.Dead();
         }
+    }
+
+    public void Dead()
+    {
+        UI.SetActive(false);
+        deadScreen.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        PlayerManager.gamePaused = true;
     }
 
     public void PickLoot(int getResource)
     {
         //Debug.Log("Get " + getResource + " resources");
         resource += getResource;
+    }
+
+    public void AddAmmo(int amount)
+    {
+        totalAmmo += amount;
+    }
+
+    public void SpendResource(int cost)
+    {
+        resource -= cost;
+    }
+
+    public void HealToFull()
+    {
+        health = maxHealth;
+    }
+
+    public void ATKup()
+    {
+        attackDamage += 1;
+    }
+
+    public void ASup()
+    {
+        attackSpeed += 0.25f;
+    }
+
+    public void MaxHPup()
+    {
+        maxHealth += 10;
+    }
+
+    public void magCapup()
+    {
+        magazineCap += 1;
     }
 }
 

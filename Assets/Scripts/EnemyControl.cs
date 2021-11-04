@@ -28,10 +28,11 @@ public class EnemyControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (PlayerManager.gamePaused) return;
+        if (!agent.enabled) return;
+
         float distance = Vector3.Distance(target.transform.position, transform.position);
         attackCooldown -= Time.deltaTime;
-
-        //if (!agent.enabled) Debug.Log("Agent disabled");
 
         if (agent.enabled)
         {

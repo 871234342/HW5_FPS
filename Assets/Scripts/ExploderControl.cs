@@ -30,9 +30,10 @@ public class ExploderControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float distance = Vector3.Distance(target.transform.position, transform.position);
-
+        if (PlayerManager.gamePaused) return;
         if (!agent.enabled) return;
+
+        float distance = Vector3.Distance(target.transform.position, transform.position);
 
         if (!triggered)
         {
