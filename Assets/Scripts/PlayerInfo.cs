@@ -19,6 +19,7 @@ public class PlayerInfo : MonoBehaviour
     public int ammo = 10;
     public int magazineCap = 10;
     public int totalAmmo = 100;
+    public int maxHealth = 100;
     public int health = 100;
     
     Rigidbody rb;
@@ -95,7 +96,7 @@ public class PlayerInfo : MonoBehaviour
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootMask))
                 {
                     Debug.Log("Hit " + hit.collider.name);
-                    hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(20);
+                    if (hit.collider.gameObject.tag == "Enemy") hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(20);
                 }
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, teraainMask))
                 {
@@ -148,14 +149,14 @@ public class PlayerInfo : MonoBehaviour
     {
         Debug.Log("Reloading");
         reloading = true;
-        attackCooldown = 2.5f / reloadSpeed;
+        attackCooldown = 1f / reloadSpeed;
         ammo = magazineCap;
     }
 
     public void Hurt(int damage)
     {
         health -= damage;
-        Debug.Log("Got hurt");
+        //Debug.Log("Take " + damage + " damage");
         if (health <= 0)
         {
             Debug.Log("You're Dead");
@@ -164,7 +165,7 @@ public class PlayerInfo : MonoBehaviour
 
     public void PickLoot(int getResource)
     {
-        Debug.Log("Get " + getResource + " resources");
+        //Debug.Log("Get " + getResource + " resources");
         resource += getResource;
     }
 }

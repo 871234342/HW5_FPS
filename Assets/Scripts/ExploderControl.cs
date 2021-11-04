@@ -11,6 +11,7 @@ public class ExploderControl : MonoBehaviour
     public float explodeTime = 2f;
     public float blastRadius = 4f;
     public int blastDamage = 50;
+    public float damageMultiplier = 1f;
     public LayerMask explodeMask;
 
     bool triggered = false;
@@ -84,7 +85,6 @@ public class ExploderControl : MonoBehaviour
 
     public void ExplodeTrigger()
     {
-        Debug.Log("Exploding!");
         if (!triggered)
         {
             triggered = true;
@@ -94,7 +94,6 @@ public class ExploderControl : MonoBehaviour
 
     void ExplodeFinish()
     {
-        Debug.Log("Exploded!");
         GameObject effect =  Instantiate(PlayerManager.instance.explodeEffect, transform.position, Quaternion.identity);
         effect.SetActive(true);
 
@@ -104,11 +103,11 @@ public class ExploderControl : MonoBehaviour
             float distance = Vector3.Distance(transform.position, hit.gameObject.transform.position);
             if (hit.name == "Player")
             {
-                hit.gameObject.GetComponent<PlayerInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<PlayerInfo>().Hurt((int)(blastDamage * damageMultiplier * (1 - distance / blastRadius)));
             }
             else
             {
-                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * damageMultiplier * (1 - distance / blastRadius)));
                 hit.gameObject.GetComponent<EnemyInfo>().ExplodeForce(20f, transform.position, blastRadius);
             }
         }

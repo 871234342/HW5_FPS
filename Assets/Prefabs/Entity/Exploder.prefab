@@ -129,7 +129,7 @@ GameObject:
   - component: {fileID: 1528306750678225727}
   m_Layer: 6
   m_Name: Exploder
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -263,13 +263,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 100
-  loot: {fileID: 5226732338953680085, guid: 2950e259d32177f4eb988111b1fb0f08, type: 3}
-  alreadyDead: 0
-  teraainMask:
+  isDead: 0
+  terrainMask:
     serializedVersion: 2
     m_Bits: 128
-  isGrounded: 0
   speed: {x: 0, y: 0, z: 0}
+  isGrounded: 0
 --- !u!114 &1528306750678225727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,6 +286,7 @@ MonoBehaviour:
   explodeTime: 0.2
   blastRadius: 4
   blastDamage: 50
+  damageMultiplier: 1
   explodeMask:
     serializedVersion: 2
     m_Bits: 72
