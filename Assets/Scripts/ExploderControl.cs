@@ -107,14 +107,15 @@ public class ExploderControl : MonoBehaviour
         {
             float distance = Vector3.Distance(transform.position, hit.gameObject.transform.position);
             distance = Mathf.Min(distance, blastRadius);
-            if (hit.name == "Player")
+            if (hit.tag == "Player")
             {
                 hit.gameObject.GetComponent<PlayerInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)), transform.position);
             }
-            else
+            else if (hit.tag == "Zombie")
             {
-                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
-                hit.gameObject.GetComponent<EnemyInfo>().ExplodeForce(20f, transform.position, blastRadius);
+                Debug.Log("HIT ZOMBIE");
+                hit.gameObject.GetComponent<EnemyControl>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<EnemyControl>().ExplodeForce(6f, transform.position, blastRadius);
             }
         }
 

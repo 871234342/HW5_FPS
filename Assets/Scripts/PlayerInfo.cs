@@ -125,7 +125,14 @@ public class PlayerInfo : MonoBehaviour
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootMask))
                 {
                     //Debug.Log("Hit " + hit.collider.name);
-                    if (hit.collider.gameObject.tag == "Enemy") hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(attackDamage);
+                    if (hit.collider.gameObject.tag == "Zombie")
+                    {
+                        hit.collider.gameObject.GetComponent<EnemyControl>().Hurt(attackDamage);
+                    }
+                    else if (hit.collider.gameObject.tag == "Exploder")
+                    {
+                        hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(attackDamage);
+                    }
                     Instantiate(HitEffect, hit.point, Quaternion.identity);
                 }
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, teraainMask))
@@ -254,7 +261,6 @@ public class PlayerInfo : MonoBehaviour
         {
             angle = 360 - angle;
         }
-        Debug.Log(angle);
         float angleR = angle * Mathf.PI / 180;
 
         // Draw effect

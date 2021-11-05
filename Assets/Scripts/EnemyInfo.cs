@@ -25,6 +25,7 @@ public class EnemyInfo : MonoBehaviour
         rb = this.GetComponent<Rigidbody>();
         agent = this.GetComponent<NavMeshAgent>();
         col = this.GetComponent<Collider>();
+        //Debug.Log(col);
         loot = PlayerManager.instance.loot;
         isGrounded = true;
         HP = (int)(baseHealth * (1 + level * 0.2f));
@@ -34,11 +35,6 @@ public class EnemyInfo : MonoBehaviour
     void Update()
     {
         if (PlayerManager.gamePaused) return;
-
-        if (transform.position.y <= -1f)
-        {
-            Destroy(this);
-        }
 
         if (isGrounded)
         {
@@ -57,7 +53,7 @@ public class EnemyInfo : MonoBehaviour
     public void Hurt(int damage)
     {
         if (isDead) return;
-        Debug.Log(this.name + " take " + damage + " damege.");
+        //Debug.Log(this.name + " take " + damage + " damege.");
         HP -= damage;
         if (HP <= 0)
         {
@@ -76,7 +72,7 @@ public class EnemyInfo : MonoBehaviour
         }
 
         GameObject drop;
-        drop = Instantiate(loot, transform.Find("Bottom").position, Quaternion.identity);
+        drop = Instantiate(loot, transform.position, Quaternion.identity);
         drop.GetComponent<LootInfo>().resource = Random.Range(10, 20) * (level + 1);
 
         Destroy(gameObject);
