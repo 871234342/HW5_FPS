@@ -5,8 +5,9 @@ using UnityEngine.AI;
 
 public class EnemyInfo : MonoBehaviour
 {
-    public int health = 100;
-    
+    [SerializeField] public int baseHealth = 100;
+    public int level = 0;
+    private int HP;
 
     [SerializeField] bool isDead = false;
     [SerializeField] LayerMask terrainMask;
@@ -26,6 +27,7 @@ public class EnemyInfo : MonoBehaviour
         col = this.GetComponent<Collider>();
         loot = PlayerManager.instance.loot;
         isGrounded = true;
+        HP = (int)(baseHealth * (1 + level * 0.2f));
     }
 
     // Update is called once per frame
@@ -56,8 +58,8 @@ public class EnemyInfo : MonoBehaviour
     {
         if (isDead) return;
         Debug.Log(this.name + " take " + damage + " damege.");
-        health -= damage;
-        if (health <= 0)
+        HP -= damage;
+        if (HP <= 0)
         {
             isDead = true;
             Dead();
@@ -75,7 +77,7 @@ public class EnemyInfo : MonoBehaviour
 
         GameObject drop;
         drop = Instantiate(loot, transform.Find("Bottom").position, Quaternion.identity);
-        drop.GetComponent<LootInfo>().resource = Random.Range(10, 20);
+        drop.GetComponent<LootInfo>().resource = Random.Range(10, 20) * (level + 1);
 
         Destroy(gameObject);
     }
@@ -131,7 +133,7 @@ public class EnemyInfo : MonoBehaviour
         boxCenter.y -= col.bounds.size.y * 0.5f;
 
         Vector3 bound = col.bounds.size / 2;
-        bound.y = 0.1f;
+        bound.y = 0.01f;
 
         return Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask);
     }

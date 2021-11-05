@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInfo : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class PlayerInfo : MonoBehaviour
     public float attackSpeed = 1f;
     public float reloadSpeed = 1f;
     private float attackCooldown = 0f;
-    private bool reloading = false;
+    public bool reloading = false;
     public int resource = 0;
 
     public int ammo = 10;
@@ -27,11 +28,12 @@ public class PlayerInfo : MonoBehaviour
     [SerializeField] GameObject deadScreen;
     [SerializeField] GameObject ShootEffect;
     [SerializeField] GameObject HitEffect;
+    [SerializeField] GameObject HurtEffect;
     Rigidbody rb;
     Collider col;
     Vector3 velocity;
     Camera mainCamera;
-    bool w, a, s, d, leftclick, sprint, jump, r;
+    public bool w, a, s, d, leftclick, sprint, jump, r;
     float mouseX, mouseY;
     Vector3 mouseDir;
     RaycastHit hit;
@@ -62,6 +64,10 @@ public class PlayerInfo : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.Confined;
             PlayerManager.instance.upgragePanel.SetActive(true);
+            w = false;
+            a = false;
+            s = false;
+            d = false;
             return;
         }
         else
@@ -171,18 +177,20 @@ public class PlayerInfo : MonoBehaviour
 
     private void Reload()
     {
+        if (ammo == magazineCap) return;
         Debug.Log("Reloading");
         reloading = true;
         attackCooldown = 1f / reloadSpeed;
-        ammo = magazineCap;
+        ammo = Mathf.Min(magazineCap, totalAmmo);
     }
 
-    public void Hurt(int damage)
+    public void Hurt(int damage, Vector3 enemyPos)
     {
         health -= damage;
+        StartCoroutine("ShowDamaged", enemyPos);
         //Debug.Log("Take " + damage + " damage");
         if (health <= 0)
-        {
+        {    
             this.Dead();
         }
     }
@@ -197,7 +205,7 @@ public class PlayerInfo : MonoBehaviour
 
     public void PickLoot(int getResource)
     {
-        //Debug.Log("Get " + getResource + " resources");
+        Debug.Log("Get " + getResource + " resources");
         resource += getResource;
     }
 
@@ -234,6 +242,34 @@ public class PlayerInfo : MonoBehaviour
     public void magCapup()
     {
         magazineCap += 1;
+    }
+
+    IEnumerator ShowDamaged(Vector3 pos)
+    {
+        Vector2 face = new Vector2(transform.forward.x, transform.forward.z);
+        Vector2 right = new Vector2(transform.right.x, transform.right.z);
+        Vector2 attackFrom = new Vector2(pos.x - transform.position.x, pos.z - transform.position.z);
+        float angle = Vector2.Angle(face, attackFrom);
+        if (Vector2.Dot(right, attackFrom) >=0)
+        {
+            angle = 360 - angle;
+        }
+        Debug.Log(angle);
+        float angleR = angle * Mathf.PI / 180;
+
+        // Draw effect
+        Vector2 effectPos = new Vector2(-30 * Mathf.Sin(angleR), 30 * Mathf.Cos(angleR));
+        GameObject tmp = Instantiate(HurtEffect, new Vector3(effectPos.x, effectPos.y, 0), Quaternion.identity);
+        tmp.transform.SetParent(UI.transform, false);
+        tmp.transform.localEulerAngles = Vector3.forward * angle;
+        Color32 oriColor = tmp.GetComponent<Image>().color;
+        for (float alpha = 200; alpha >= 0; alpha -= 200 * Time.deltaTime)
+        {
+            oriColor.a = (byte)alpha;
+            tmp.GetComponent<Image>().color = oriColor;
+            yield return null;
+        }
+        Destroy(tmp);
     }
 }
 

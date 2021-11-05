@@ -10,8 +10,9 @@ public class ExploderControl : MonoBehaviour
 
     public float explodeTime = 2f;
     public float blastRadius = 4f;
-    public int blastDamage = 50;
-    public float damageMultiplier = 1f;
+    public int baseBlastDamage = 50;
+    private int blastDamage;
+    private int level;
     public LayerMask explodeMask;
 
     bool triggered = false;
@@ -25,6 +26,8 @@ public class ExploderControl : MonoBehaviour
         target = PlayerManager.instance.player;
         agent = GetComponent<NavMeshAgent>();
         agent.destination = target.transform.position;
+        level = this.gameObject.GetComponent<EnemyInfo>().level;
+        blastDamage = (int)(baseBlastDamage * (1 + level * 0.15f));
     }
 
     // Update is called once per frame
@@ -90,6 +93,7 @@ public class ExploderControl : MonoBehaviour
         {
             triggered = true;
             agent.speed = 0;
+            StartCoroutine("ExplodeEffect");
         }
     }
 
@@ -102,17 +106,30 @@ public class ExploderControl : MonoBehaviour
         foreach (Collider hit in victims)
         {
             float distance = Vector3.Distance(transform.position, hit.gameObject.transform.position);
+            distance = Mathf.Min(distance, blastRadius);
             if (hit.name == "Player")
             {
-                hit.gameObject.GetComponent<PlayerInfo>().Hurt((int)(blastDamage * damageMultiplier * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<PlayerInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)), transform.position);
             }
             else
             {
-                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * damageMultiplier * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
                 hit.gameObject.GetComponent<EnemyInfo>().ExplodeForce(20f, transform.position, blastRadius);
             }
         }
 
         this.GetComponent<EnemyInfo>().Dead(true);
+    }
+
+    IEnumerator ExplodeEffect()
+    {
+        float scale = 1f;
+        Vector3 originalScale = transform.localScale;
+
+        for (;; scale += 0.3f * Time.deltaTime / explodeTime)
+        {
+            transform.localScale = originalScale * scale;
+            yield return null;
+        }
     }
 }

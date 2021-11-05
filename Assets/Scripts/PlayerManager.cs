@@ -18,15 +18,20 @@ public class PlayerManager : MonoBehaviour
     public GameObject player;
     public GameObject loot;
     public GameObject explodeEffect;
-    public GameObject exploder;
+    public List<GameObject> enemies;
+    public List<float> enemiesSpawnRatio;
+    private float enemiesSpawnTotal;
     public GameObject upgragePanel;
     public GameObject pauseMeun;
     public GameObject UI;
     public GameObject WinScreen;
     public GameObject Exit;
     public GameObject PreExit;
-    public int difficulty = 0;
-    public float gameTime = 0f;
+
+    private int difficulty = 0;
+    private float gameTime = 0f;
+    [SerializeField] private int diffRiaseRate;
+
     public static bool gamePaused = false;
     public static bool pauseMeunOpened = false;
 
@@ -38,7 +43,7 @@ public class PlayerManager : MonoBehaviour
 
     [SerializeField] private Vector2 boundary;
     [SerializeField] private float spawnInterval = 10f;
-    [SerializeField] private float spawnDistance = 10f;
+    [SerializeField] private Vector2 spawnDistance;
     private int spawnAmount = 2;
     private float spawnRange = 4f;
     private float spawnCooldown;
@@ -52,6 +57,24 @@ public class PlayerManager : MonoBehaviour
         spawnCooldown = spawnInterval;
         exitWarning = false;
         exitTime = Random.Range(480, 600);
+        if (enemies.Count != enemiesSpawnRatio.Count)
+        {
+            Debug.Log("Enemies and their prob not match!!");
+        }
+        foreach (float i in enemiesSpawnRatio)
+        {
+            enemiesSpawnTotal += i;
+        }
+        for (int i = 1; i < enemiesSpawnRatio.Count; i++)
+        {
+            enemiesSpawnRatio[i] += enemiesSpawnRatio[i - 1];
+        }
+        if (spawnDistance.x > spawnDistance.y)
+        {
+            float tmp = spawnDistance.x;
+            spawnDistance.x = spawnDistance.y;
+            spawnDistance.y = tmp;
+        }
     }
 
     private void Update()
@@ -96,12 +119,18 @@ public class PlayerManager : MonoBehaviour
         if (spawnCooldown <= 0)
         {
             spawnCooldown = spawnInterval;
+            Vector2 spawnCenter;
+            Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.z);
 
-            Vector3 spawnCenter =
+            do
+            {
+                spawnCenter =
                 new Vector2(
-                    Random.Range(Mathf.Max(-boundary.x, player.transform.position.x - spawnDistance), Mathf.Min(boundary.x, player.transform.position.x + spawnDistance)),
-                    Random.Range(Mathf.Max(-boundary.y, player.transform.position.z - spawnDistance), Mathf.Min(boundary.y, player.transform.position.z + spawnDistance))
-                    );
+                    Random.Range(Mathf.Max(-boundary.x, player.transform.position.x - spawnDistance.y), Mathf.Min(boundary.x, player.transform.position.x + spawnDistance.y)),
+                    Random.Range(Mathf.Max(-boundary.y, player.transform.position.z - spawnDistance.y), Mathf.Min(boundary.y, player.transform.position.z + spawnDistance.y))
+                   );
+            } while (Vector2.Distance(spawnCenter, playerPos) < spawnDistance.x);
+
 
             for (int i = 0; i < spawnAmount; i++)
             {
@@ -112,8 +141,15 @@ public class PlayerManager : MonoBehaviour
                         Random.Range(spawnCenter.y - spawnRange, spawnCenter.y + spawnRange)
                         );
                 spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f;
-                GameObject newSpawn = Instantiate(exploder, spawnpoint, Quaternion.identity);
-                newSpawn.GetComponent<ExploderControl>().damageMultiplier = difficulty / 5;
+
+                float rand = Random.Range(0, enemiesSpawnTotal);
+                int index = 0;
+                for (; index < enemies.Count; index++)
+                {
+                    if (rand <= enemiesSpawnRatio[index]) break;
+                }
+                GameObject newSpawn = Instantiate(enemies[index], spawnpoint, Quaternion.identity);
+                newSpawn.GetComponent<EnemyInfo>().level = difficulty;
             }
         }
 
@@ -171,5 +207,4 @@ public class PlayerManager : MonoBehaviour
         UI.transform.Find("Exit").gameObject.SetActive(false);
         exitWarning = false;
     }
-
 }

@@ -7,7 +7,9 @@ public class EnemyControl : MonoBehaviour
 {
     public float detectRadius = 7f;
     public float chaseRadius = 21f;
-    public int attackDamage = 10;
+    public int baseAttackDamage = 10;
+    private int level;
+    private int attackDamage;
 
     public float attackSpeed = 1f;
     private float attackCooldown = 0f;
@@ -22,7 +24,8 @@ public class EnemyControl : MonoBehaviour
         target = PlayerManager.instance.player;
         agent = GetComponent<NavMeshAgent>();
         if (agent.enabled) agent.destination = target.transform.position;
-        //agent.enabled = false;
+        level = this.gameObject.GetComponent<EnemyInfo>().level;
+        attackDamage = (int)(baseAttackDamage * (1 + level * 0.15f));
     }
 
     // Update is called once per frame
@@ -80,6 +83,6 @@ public class EnemyControl : MonoBehaviour
 
     void Attack(int attackDamage)
     {
-        target.GetComponent<PlayerInfo>().Hurt(attackDamage);
+        target.GetComponent<PlayerInfo>().Hurt(attackDamage, transform.position);
     }
 }
