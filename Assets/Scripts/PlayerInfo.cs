@@ -101,14 +101,7 @@ public class PlayerInfo : MonoBehaviour
             reloading = false;
             Debug.Log("Reloaded");
         }
-
-        if (jump && isGrounded)
-        {
-            velocity = rb.velocity;
-            velocity.y = jumpSpeed;
-            rb.velocity= velocity;
-        }
-
+        
         if (leftclick && !sprint && attackCooldown <= 0)
         {
             if (totalAmmo == 0)
@@ -171,6 +164,13 @@ public class PlayerInfo : MonoBehaviour
 
         velocity.y = rb.velocity.y;
         if (!isGrounded) velocity.y -= 9.8f * Time.deltaTime;
+        else velocity.y = 0;
+
+        if (jump && isGrounded)
+        {
+            velocity.y = jumpSpeed;
+            isGrounded = false;
+        }
         rb.velocity = velocity;
 
         this.transform.localEulerAngles = Vector3.up * mouseDir.y;

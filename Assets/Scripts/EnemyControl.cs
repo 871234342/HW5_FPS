@@ -90,6 +90,7 @@ public class EnemyControl : MonoBehaviour
             {
                 alerted = true;
                 agent.SetDestination(target.transform.position);
+                animator.SetFloat("MoveSpeed", 1f);
             }
             else if (alerted && distance <= chaseRadius)
             {
@@ -99,6 +100,7 @@ public class EnemyControl : MonoBehaviour
             {
                 alerted = false;
                 agent.SetDestination(transform.position);
+                animator.SetFloat("MoveSpeed", 0f);
             }
 
             if (distance <= agent.stoppingDistance)
@@ -137,7 +139,7 @@ public class EnemyControl : MonoBehaviour
     public void Hurt(int damage)
     {
         if (isDead) return;
-        Debug.Log(this.name + ": " + HP + "\\" + (int)(baseHealth * (1 + level * 0.2f)));
+        alerted = true;
         HP -= damage;
         if (HP <= 0)
         {

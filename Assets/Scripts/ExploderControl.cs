@@ -43,6 +43,7 @@ public class ExploderControl : MonoBehaviour
             if (distance <= detectRadius)
             {
                 alerted = true;
+                GetComponent<Animation>().Play("run");
                 agent.SetDestination(target.transform.position);
             }
             else if (alerted && distance <= chaseRadius)
@@ -52,6 +53,7 @@ public class ExploderControl : MonoBehaviour
             else
             {
                 alerted = false;
+                GetComponent<Animation>().Play("idle");
                 agent.SetDestination(transform.position);
             }
             if (distance <= agent.stoppingDistance)
@@ -124,6 +126,7 @@ public class ExploderControl : MonoBehaviour
 
     IEnumerator ExplodeEffect()
     {
+        GetComponent<Animation>().Play("special");
         float scale = 1f;
         Vector3 originalScale = transform.localScale;
 

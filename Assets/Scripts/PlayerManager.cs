@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -49,6 +50,7 @@ public class PlayerManager : MonoBehaviour
     private float spawnCooldown;
     private float spawnChance;
     [SerializeField] private bool spawnable = true;
+    [SerializeField] private int initSpawn = 50;
 
     private void Start()
     {
@@ -73,6 +75,9 @@ public class PlayerManager : MonoBehaviour
             spawnDistance.x = spawnDistance.y;
             spawnDistance.y = tmp;
         }
+
+        // initial spawn
+        Spawn(initSpawn);
     }
 
     private void Update()
@@ -116,48 +121,7 @@ public class PlayerManager : MonoBehaviour
         if (spawnable)  spawnCooldown -= Time.deltaTime;
         if (spawnCooldown <= 0)
         {
-            spawnCooldown = spawnInterval;
-            Vector2 spawnCenter;
-            Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.z);
-
-            do
-            {
-                spawnCenter =
-                new Vector2(
-                    Random.Range(Mathf.Max(-boundary.x, player.transform.position.x - spawnDistance.y), Mathf.Min(boundary.x, player.transform.position.x + spawnDistance.y)),
-                    Random.Range(Mathf.Max(-boundary.y, player.transform.position.z - spawnDistance.y), Mathf.Min(boundary.y, player.transform.position.z + spawnDistance.y))
-                   );
-            } while (Vector2.Distance(spawnCenter, playerPos) < spawnDistance.x);
-
-
-            for (int i = 0; i < spawnAmount; i++)
-            {
-                Vector3 spawnpoint =
-                    new Vector3(
-                        Random.Range(spawnCenter.x - spawnRange, spawnCenter.x + spawnRange),
-                        -500,
-                        Random.Range(spawnCenter.y - spawnRange, spawnCenter.y + spawnRange)
-                        );
-                spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f - 200f;
-                Debug.Log("Spawn At " + spawnpoint);
-
-                float rand = Random.Range(0, enemiesSpawnTotal);
-                int index = 0;
-                for (; index < enemies.Count; index++)
-                {
-                    if (rand <= enemiesSpawnRatio[index]) break;
-
-                }
-                GameObject newSpawn = Instantiate(enemies[index], spawnpoint, Quaternion.identity);
-                if (newSpawn.GetComponent<EnemyInfo>() != null)
-                {
-                    newSpawn.GetComponent<EnemyInfo>().level = difficulty;
-                }
-                else
-                {
-                    newSpawn.GetComponent<EnemyControl>().level = difficulty;
-                }
-            }
+            Spawn(spawnAmount);
         }
 
         // spawn exit point
@@ -213,5 +177,58 @@ public class PlayerManager : MonoBehaviour
         //exitWarning = false;
         UI.transform.Find("Exit").gameObject.SetActive(false);
         exitWarning = false;
+    }
+
+    private void Spawn(int amount)
+    {
+        spawnCooldown = spawnInterval;
+        Vector2 spawnCenter;
+        Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.z);
+
+        do
+        {
+            spawnCenter =
+            new Vector2(
+                Random.Range(Mathf.Max(-boundary.x, player.transform.position.x - spawnDistance.y), Mathf.Min(boundary.x, player.transform.position.x + spawnDistance.y)),
+                Random.Range(Mathf.Max(-boundary.y, player.transform.position.z - spawnDistance.y), Mathf.Min(boundary.y, player.transform.position.z + spawnDistance.y))
+               );
+        } while (Vector2.Distance(spawnCenter, playerPos) < spawnDistance.x);
+
+
+        for (int i = 0; i < amount; i++)
+        {
+            Vector3 spawnpoint =
+                new Vector3(
+                    Random.Range(spawnCenter.x - spawnRange, spawnCenter.x + spawnRange),
+                    -500,
+                    Random.Range(spawnCenter.y - spawnRange, spawnCenter.y + spawnRange)
+                    );
+            spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f - 200f;
+            spawnpoint = MoveToNavMesh(spawnpoint);
+
+            float rand = Random.Range(0, enemiesSpawnTotal);
+            int index = 0;
+            for (; index < enemies.Count; index++)
+            {
+                if (rand <= enemiesSpawnRatio[index]) break;
+
+            }
+            GameObject newSpawn = Instantiate(enemies[index], spawnpoint, Quaternion.identity);
+            if (newSpawn.GetComponent<EnemyInfo>() != null)
+            {
+                newSpawn.GetComponent<EnemyInfo>().level = difficulty;
+            }
+            else
+            {
+                newSpawn.GetComponent<EnemyControl>().level = difficulty;
+            }
+        }
+    }
+
+    private Vector3 MoveToNavMesh(Vector3 pos)
+    {
+        NavMeshHit hit;
+        NavMesh.SamplePosition(pos, out hit, 1f, NavMesh.AllAreas);
+        return hit.position;
     }
 }

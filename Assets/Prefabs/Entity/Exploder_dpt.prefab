@@ -5346,7 +5346,7 @@ GameObject:
   - component: {fileID: 6452582957313594031}
   - component: {fileID: 6452582957313594032}
   - component: {fileID: 6452582957313594033}
-  - component: {fileID: 5528604942374852257}
+  - component: {fileID: 8923461733393069902}
   m_Layer: 6
   m_Name: Exploder_dpt
   m_TagString: Exploder
@@ -5512,25 +5512,24 @@ MonoBehaviour:
   explodeMask:
     serializedVersion: 2
     m_Bits: 72
---- !u!95 &5528604942374852257
-Animator:
-  serializedVersion: 3
+--- !u!111 &8923461733393069902
+Animation:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6452582957313594039}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f5adb2c2d4464dd498e5477a95174208, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
+  serializedVersion: 3
+  m_Animation: {fileID: 0}
+  m_Animations:
+  - {fileID: 7400000, guid: 5d1ebe773424be8479545f3a8c68cd8d, type: 3}
+  - {fileID: 7400000, guid: 84fd412145e6d8f4e80a82f4c08c4f79, type: 3}
+  - {fileID: 7400000, guid: 3f2c2fe4ce4a696429ed537165698096, type: 3}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0
 --- !u!1 &6452582957669551906
 GameObject:
   m_ObjectHideFlags: 0
