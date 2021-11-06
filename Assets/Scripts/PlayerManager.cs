@@ -57,6 +57,10 @@ public class PlayerManager : MonoBehaviour
         spawnCooldown = spawnInterval;
         exitWarning = false;
         exitTime = Random.Range(480, 600);
+        boundary.x -= spawnDistance.y;
+        boundary.y -= spawnDistance.y;
+
+        // spawn list check
         if (enemies.Count != enemiesSpawnRatio.Count)
         {
             Debug.Log("Enemies and their prob not match!!");
@@ -77,7 +81,7 @@ public class PlayerManager : MonoBehaviour
         }
 
         // initial spawn
-        Spawn(initSpawn);
+        InitSpawn(initSpawn);
     }
 
     private void Update()
@@ -87,8 +91,10 @@ public class PlayerManager : MonoBehaviour
             if (pauseMeunOpened)
             {
                 gamePaused = false;
-                Cursor.lockState = CursorLockMode.Locked;
+                //Cursor.lockState = CursorLockMode.Locked;
+                StartCoroutine("LockCursor");
                 pauseMeun.SetActive(false);
+                Debug.Log("Lock");
             }
             else
             {
@@ -179,6 +185,12 @@ public class PlayerManager : MonoBehaviour
         exitWarning = false;
     }
 
+    IEnumerator LockCursor()
+    {
+        yield return new WaitForEndOfFrame();
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
     private void Spawn(int amount)
     {
         spawnCooldown = spawnInterval;
@@ -194,15 +206,32 @@ public class PlayerManager : MonoBehaviour
                );
         } while (Vector2.Distance(spawnCenter, playerPos) < spawnDistance.x);
 
+        SpawnLoop(amount, spawnCenter, spawnRange);
+    }
 
+    private void InitSpawn(int amount)
+    {
+        spawnCooldown = spawnInterval;
+        for (; amount > 0; amount--)
+        {
+            Vector2 spawnCenter = new Vector2(Random.Range(-boundary.x, boundary.x), Random.Range(-boundary.y, boundary.y));
+            SpawnLoop(1, spawnCenter, 0f);
+        }
+    }
+
+    private void SpawnLoop(int amount, Vector2 center, float radius)
+    {
         for (int i = 0; i < amount; i++)
         {
-            Vector3 spawnpoint =
-                new Vector3(
-                    Random.Range(spawnCenter.x - spawnRange, spawnCenter.x + spawnRange),
-                    -500,
-                    Random.Range(spawnCenter.y - spawnRange, spawnCenter.y + spawnRange)
-                    );
+            Vector3 spawnpoint;
+            if (radius == 0) spawnpoint = new Vector3(center.x, -500, center.y);
+            else    spawnpoint =
+                        new Vector3(
+                            Random.Range(center.x - radius, center.x + radius),
+                            -500,
+                            Random.Range(center.y - radius, center.y + radius)
+                            );
+
             spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f - 200f;
             spawnpoint = MoveToNavMesh(spawnpoint);
 
@@ -228,7 +257,7 @@ public class PlayerManager : MonoBehaviour
     private Vector3 MoveToNavMesh(Vector3 pos)
     {
         NavMeshHit hit;
-        NavMesh.SamplePosition(pos, out hit, 1f, NavMesh.AllAreas);
+        NavMesh.SamplePosition(pos, out hit, 2f, NavMesh.AllAreas);
         return hit.position;
     }
 }

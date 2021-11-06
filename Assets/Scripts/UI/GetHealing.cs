@@ -15,6 +15,7 @@ public class GetHealing : MonoBehaviour
     {
         actualCost = cost;
         player = PlayerManager.instance.player;
+        transform.Find("Text").gameObject.GetComponent<Text>().text = "Heal - " + actualCost;
     }
 
     // Update is called once per frame

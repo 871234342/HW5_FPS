@@ -26,6 +26,7 @@ public class EnemyControl : MonoBehaviour
     [SerializeField] LayerMask terrainMask;
     [SerializeField] private Vector3 speed;
     [SerializeField] bool isGrounded;
+    [SerializeField] private bool offGround = false;
 
     private GameObject loot;
     Rigidbody rb;
@@ -44,9 +45,11 @@ public class EnemyControl : MonoBehaviour
         HP = (int)(baseHealth * (1 + level * 0.2f));
         animator = GetComponent<Animator>();
         if (agent.enabled) agent.destination = target.transform.position;
-        //level = this.gameObject.GetComponent<EnemyInfo>().level;
+        detectRadius *= (level + 1) * 0.2f;
+        chaseRadius *= (level + 1) * 0.3f;
         attackDamage = (int)(baseAttackDamage * (1 + level * 0.15f));
-        
+
+        if (animator == null) return;
         AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
         foreach (AnimationClip clip in clips)
         {
@@ -59,6 +62,9 @@ public class EnemyControl : MonoBehaviour
                 deathInterval = clip.length;
             }
         }
+
+        // Fall out of field check
+        StartCoroutine("CheckOutOfField");
     }
 
     // Update is called once per frame
@@ -67,7 +73,7 @@ public class EnemyControl : MonoBehaviour
         if (PlayerManager.gamePaused) return;
         if (isDead) return;
 
-        if (isGrounded)
+        if (isGrounded && !offGround)
         {
             speed = Vector3.zero;
             agent.enabled = true;
@@ -90,7 +96,7 @@ public class EnemyControl : MonoBehaviour
             {
                 alerted = true;
                 agent.SetDestination(target.transform.position);
-                animator.SetFloat("MoveSpeed", 1f);
+                if(animator != null) animator.SetFloat("MoveSpeed", 1f);
             }
             else if (alerted && distance <= chaseRadius)
             {
@@ -100,7 +106,7 @@ public class EnemyControl : MonoBehaviour
             {
                 alerted = false;
                 agent.SetDestination(transform.position);
-                animator.SetFloat("MoveSpeed", 0f);
+                if (animator != null) animator.SetFloat("MoveSpeed", 0f);
             }
 
             if (distance <= agent.stoppingDistance)
@@ -133,7 +139,7 @@ public class EnemyControl : MonoBehaviour
     void Attack(int attackDamage)
     {
         target.GetComponent<PlayerInfo>().Hurt(attackDamage, transform.position);
-        animator.SetTrigger("Attack");
+        if (animator != null) animator.SetTrigger("Attack");
     }
 
     public void Hurt(int damage)
@@ -159,9 +165,9 @@ public class EnemyControl : MonoBehaviour
 
         GameObject drop;
         drop = Instantiate(loot, transform.position, Quaternion.identity);
-        drop.GetComponent<LootInfo>().resource = Random.Range(10, 20) * (level + 1);
+        drop.GetComponent<LootInfo>().resource = Random.Range(5, 15) * (level + 1);
 
-        animator.SetTrigger("Dead");
+        if (animator != null) animator.SetTrigger("Dead");
         isDead = true;
         col.enabled = false;
         Destroy(gameObject, deathInterval);
@@ -173,14 +179,15 @@ public class EnemyControl : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, explosionPosition);
         Vector3 dir = Vector3.Normalize(transform.position - explosionPosition);
-        float push = (1 - distance / radius) * 6;
+        float push = (1 - distance / radius) * explosionForce;
 
         speed = dir * push;
-        speed.y = explosionForce;
+        speed.y = explosionForce * ((1 - distance / radius));
         Vector3 pos = transform.position;
-        pos.y += 0.1f;
+        pos.y += 0.2f;
         transform.position = pos;
         isGrounded = false;
+        StartCoroutine("ForceOffGround");
     }
 
     private bool IsGrounded()
@@ -190,6 +197,30 @@ public class EnemyControl : MonoBehaviour
 
         Vector3 bound = col.bounds.size / 2;
         bound.y = 0.01f;
+        //Debug.Log("Center: " + boxCenter + ", bound: " + bound + ", Result: " + Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask));
         return Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask);
+    }
+
+    IEnumerator ForceOffGround()
+    {
+        offGround = true;
+        for(float i = 0.1f; i >+ 0; i -= Time.deltaTime)
+        {
+            yield return null;
+        }
+        offGround = false;
+    }
+
+    IEnumerator CheckOutOfField()
+    {
+        for(; ; )
+        {
+            if(transform.position.y < -500)
+            {
+                Destroy(this);
+            }
+            yield return new WaitForSeconds(5f);
+        }
+
     }
 }

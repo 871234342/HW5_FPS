@@ -13,6 +13,7 @@ public class EnemyInfo : MonoBehaviour
     [SerializeField] LayerMask terrainMask;
     [SerializeField] private Vector3 speed;
     [SerializeField] bool isGrounded;
+    [SerializeField] private bool offGround = false;
 
     private GameObject loot;
     Rigidbody rb;
@@ -29,6 +30,9 @@ public class EnemyInfo : MonoBehaviour
         loot = PlayerManager.instance.loot;
         isGrounded = true;
         HP = (int)(baseHealth * (1 + level * 0.2f));
+
+        // Fall out of field check
+        StartCoroutine("CheckOutOfField");
     }
 
     // Update is called once per frame
@@ -36,7 +40,7 @@ public class EnemyInfo : MonoBehaviour
     {
         if (PlayerManager.gamePaused) return;
 
-        if (isGrounded)
+        if (isGrounded && !offGround)
         {
             speed = Vector3.zero;
             agent.enabled = true;
@@ -53,7 +57,7 @@ public class EnemyInfo : MonoBehaviour
     public void Hurt(int damage)
     {
         if (isDead) return;
-        //Debug.Log(this.name + " take " + damage + " damege.");
+        GetComponent<ExploderControl>().alerted = true;
         HP -= damage;
         if (HP <= 0)
         {
@@ -73,7 +77,7 @@ public class EnemyInfo : MonoBehaviour
 
         GameObject drop;
         drop = Instantiate(loot, transform.position, Quaternion.identity);
-        drop.GetComponent<LootInfo>().resource = Random.Range(10, 20) * (level + 1);
+        drop.GetComponent<LootInfo>().resource = Random.Range(5, 10) * (level + 1);
 
         Destroy(gameObject);
     }
@@ -84,43 +88,15 @@ public class EnemyInfo : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, explosionPosition);
         Vector3 dir = Vector3.Normalize(transform.position - explosionPosition);
-        float push = (1 - distance / radius) * 6;
+        float push = (1 - distance / radius) * explosionForce;
 
         speed = dir * push;
-        speed.y = 4;
+        speed.y = explosionForce * ((1 - distance / radius));
         Vector3 pos = transform.position;
-        pos.y += 0.1f;
+        pos.y += 0.2f;
         transform.position = pos;
         isGrounded = false;
-    }
-
-    private bool IsGrounded()
-    {
-        // has bug
-        // don't know why
-        Vector3 boxCenter = this.transform.position;
-        boxCenter.y -= col.bounds.size.y * 0.5f;
-
-        Vector3 bound = col.bounds.size / 2;
-        //bound.x -= 0.1f;
-        bound.y = 0.1f;
-        //bound.z -= 0.1f;
-
-        Debug.DrawLine(boxCenter + new Vector3(col.bounds.extents.x, 0, 0), boxCenter + new Vector3(col.bounds.extents.x, -1f, 0), Color.black, 0.5f);
-        Debug.DrawLine(boxCenter - new Vector3(col.bounds.extents.x, 0, 0), boxCenter - new Vector3(col.bounds.extents.x, -1f, 0), Color.black, 0.5f);
-        Debug.DrawLine(boxCenter + new Vector3(0, 0, col.bounds.extents.z), boxCenter + new Vector3(0, -1f, col.bounds.extents.z), Color.black, 0.5f);
-        Debug.DrawLine(boxCenter - new Vector3(0, 0, col.bounds.extents.z), boxCenter - new Vector3(0, -1f, col.bounds.extents.z), Color.black, 0.5f);
-
-        RaycastHit hit;
-        Physics.BoxCast(col.bounds.center, col.bounds.size, Vector3.down, out hit, Quaternion.identity, 1f, terrainMask);
-        if (hit.collider != null)  Debug.Log(hit.collider.name);
-        else
-        {
-            Debug.Log("??");
-        }
-
-        return Physics.BoxCast(col.bounds.center, col.bounds.size, Vector3.down, Quaternion.identity, 1f, terrainMask);
-        //return Physics.CheckBox(boxCenter, bound, Quaternion.identity, teraainMask);
+        StartCoroutine("ForceOffGround");
     }
 
     private bool IsGrounded2()
@@ -134,11 +110,26 @@ public class EnemyInfo : MonoBehaviour
         return Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask);
     }
 
-    private bool IsGrounded3()
+    IEnumerator ForceOffGround()
     {
-        Vector3 start = this.transform.position;
-        float disToGround = col.bounds.extents.y;
+        offGround = true;     
+        for (float i = 0.1f; i >= 0; i -= Time.deltaTime)
+        {
+            yield return null;
+        }
+        offGround = false;
+    }
 
-        return Physics.Raycast(transform.position, -Vector3.up, disToGround + 0.1f);
+    IEnumerator CheckOutOfField()
+    {
+        for (; ; )
+        {
+            if (transform.position.y < -500)
+            {
+                Destroy(this);
+            }
+            yield return new WaitForSeconds(10f);
+        }
+
     }
 }

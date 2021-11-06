@@ -16,7 +16,7 @@ public class ExploderControl : MonoBehaviour
     public LayerMask explodeMask;
 
     bool triggered = false;
-    bool alerted = false;
+    public bool alerted = false;
     NavMeshAgent agent;
     GameObject target;
 
@@ -28,6 +28,8 @@ public class ExploderControl : MonoBehaviour
         agent.destination = target.transform.position;
         level = this.gameObject.GetComponent<EnemyInfo>().level;
         blastDamage = (int)(baseBlastDamage * (1 + level * 0.15f));
+        detectRadius *= (level + 1) * 0.2f;
+        chaseRadius *= (level + 1) * 0.3f;
     }
 
     // Update is called once per frame
@@ -118,6 +120,12 @@ public class ExploderControl : MonoBehaviour
                 Debug.Log("HIT ZOMBIE");
                 hit.gameObject.GetComponent<EnemyControl>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
                 hit.gameObject.GetComponent<EnemyControl>().ExplodeForce(6f, transform.position, blastRadius);
+            }
+            else if (hit.tag == "Exploder")
+            {
+                Debug.Log("HIT Exploder");
+                hit.gameObject.GetComponent<EnemyInfo>().Hurt((int)(blastDamage * (1 - distance / blastRadius)));
+                hit.gameObject.GetComponent<EnemyInfo>().ExplodeForce(6f, transform.position, blastRadius);
             }
         }
 

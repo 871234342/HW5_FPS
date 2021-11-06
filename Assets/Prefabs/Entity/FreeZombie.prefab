@@ -982,7 +982,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 1
+  m_Speed: 1.1
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -1006,17 +1006,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b459dd319dfbb343849b50db95fef12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectRadius: 7
-  chaseRadius: 21
+  detectRadius: 15
+  chaseRadius: 30
   baseAttackDamage: 10
   level: 0
   baseHealth: 100
+  HP: 0
   isDead: 0
   terrainMask:
     serializedVersion: 2
     m_Bits: 128
   speed: {x: 0, y: 0, z: 0}
   isGrounded: 0
+  offGround: 0
 --- !u!1 &92264889946441423
 GameObject:
   m_ObjectHideFlags: 0

@@ -389,14 +389,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e75af940fe856e42af568b383d697d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectRadius: 7
-  chaseRadius: 21
+  detectRadius: 14
+  chaseRadius: 30
   explodeTime: 2
   blastRadius: 4
   baseBlastDamage: 50
   explodeMask:
     serializedVersion: 2
     m_Bits: 72
+  alerted: 0
 --- !u!114 &3524459976995192954
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -414,7 +415,7 @@ MonoBehaviour:
   isDead: 0
   terrainMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   speed: {x: 0, y: 0, z: 0}
   isGrounded: 0
 --- !u!1 &3524459976419216492

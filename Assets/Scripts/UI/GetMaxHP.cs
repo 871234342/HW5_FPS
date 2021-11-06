@@ -16,6 +16,7 @@ public class GetMaxHP : MonoBehaviour
     {
         actualCost = cost;
         player = PlayerManager.instance.player;
+        transform.Find("Text").gameObject.GetComponent<Text>().text = "MaxHP - " + actualCost;
     }
 
     // Update is called once per frame

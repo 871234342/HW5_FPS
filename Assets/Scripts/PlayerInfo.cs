@@ -128,12 +128,14 @@ public class PlayerInfo : MonoBehaviour
                     if (hit.collider.gameObject.tag == "Zombie")
                     {
                         hit.collider.gameObject.GetComponent<EnemyControl>().Hurt((int)(attackDamage * Mathf.Pow(attackMultiplier, 1.05f)));
+                        Instantiate(HitEffect, hit.point, Quaternion.identity);
                     }
                     else if (hit.collider.gameObject.tag == "Exploder")
                     {
                         hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt((int)(attackDamage * Mathf.Pow(attackMultiplier, 1.05f)));
+                        Instantiate(HitEffect, hit.point, Quaternion.identity);
                     }
-                    Instantiate(HitEffect, hit.point, Quaternion.identity);
+                    
                 }
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, teraainMask))
                 {
