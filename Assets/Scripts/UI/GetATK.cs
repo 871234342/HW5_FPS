@@ -33,7 +33,7 @@ public class GetATK : MonoBehaviour
 
     public void Preesed()
     {
-        player.GetComponent<PlayerInfo>().ATKup();
+        player.GetComponent<PlayerInfo>().ATKMulup(0.1f);
         player.GetComponent<PlayerInfo>().SpendResource(actualCost);
         count++;
         float newCost = cost * Mathf.Pow(count, 1.1f);

@@ -12,6 +12,7 @@ public class PlayerInfo : MonoBehaviour
     public LayerMask shootMask, teraainMask;
 
     public int attackDamage;
+    public float attackMultiplier = 1f;
     public float attackSpeed = 1f;
     public float reloadSpeed = 1f;
     private float attackCooldown = 0f;
@@ -26,14 +27,15 @@ public class PlayerInfo : MonoBehaviour
 
     [SerializeField] GameObject UI;
     [SerializeField] GameObject deadScreen;
-    [SerializeField] GameObject ShootEffect;
     [SerializeField] GameObject HitEffect;
     [SerializeField] GameObject HurtEffect;
+    [SerializeField] Material NormalGun;
+    [SerializeField] Material ReloadGun;
     Rigidbody rb;
     Collider col;
     Vector3 velocity;
     Camera mainCamera;
-    public bool w, a, s, d, leftclick, sprint, jump, r;
+    public bool w, a, s, d, leftclick, sprint, jump, r, isGrounded;
     float mouseX, mouseY;
     Vector3 mouseDir;
     RaycastHit hit;
@@ -76,19 +78,23 @@ public class PlayerInfo : MonoBehaviour
             PlayerManager.instance.upgragePanel.SetActive(false);
         }
 
-        w = Input.GetKey(KeyCode.W);
-        a = Input.GetKey(KeyCode.A);
-        s = Input.GetKey(KeyCode.S);
-        d = Input.GetKey(KeyCode.D);
+        if (isGrounded)
+        {
+            w = Input.GetKey(KeyCode.W);
+            a = Input.GetKey(KeyCode.A);
+            s = Input.GetKey(KeyCode.S);
+            d = Input.GetKey(KeyCode.D);
+        }
+        sprint = Input.GetButton("Fire3");
         r = Input.GetKeyDown(KeyCode.R);
         leftclick = Input.GetMouseButton(0);
-        sprint = Input.GetButton("Fire3");
         jump = Input.GetButtonDown("Jump");
         mouseX = Input.GetAxis("Mouse X");
         mouseY = Input.GetAxis("Mouse Y");
         mouseDir += new Vector3(-mouseY, mouseX, 0) * cameraSpeed;
         mouseDir.x = Mathf.Clamp(mouseDir.x, -85f, 85f);
         attackCooldown -= Time.deltaTime;
+        isGrounded = IsGrounded();
 
         if (reloading && attackCooldown <= 0)
         {
@@ -96,7 +102,7 @@ public class PlayerInfo : MonoBehaviour
             Debug.Log("Reloaded");
         }
 
-        if (jump && IsGrounded())
+        if (jump && isGrounded)
         {
             velocity = rb.velocity;
             velocity.y = jumpSpeed;
@@ -121,17 +127,18 @@ public class PlayerInfo : MonoBehaviour
                 ammo--;
                 totalAmmo--;
                 attackCooldown = 1f / attackSpeed;
-                Instantiate(ShootEffect, mainCamera.transform.Find("Emiter").position, Quaternion.identity);
+                StartCoroutine("FireEffect");
+
                 if (Physics.Raycast(this.transform.position, mainCamera.transform.forward, out hit, 100f, shootMask))
                 {
                     //Debug.Log("Hit " + hit.collider.name);
                     if (hit.collider.gameObject.tag == "Zombie")
                     {
-                        hit.collider.gameObject.GetComponent<EnemyControl>().Hurt(attackDamage);
+                        hit.collider.gameObject.GetComponent<EnemyControl>().Hurt((int)(attackDamage * Mathf.Pow(attackMultiplier, 1.05f)));
                     }
                     else if (hit.collider.gameObject.tag == "Exploder")
                     {
-                        hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt(attackDamage);
+                        hit.collider.gameObject.GetComponent<EnemyInfo>().Hurt((int)(attackDamage * Mathf.Pow(attackMultiplier, 1.05f)));
                     }
                     Instantiate(HitEffect, hit.point, Quaternion.identity);
                 }
@@ -161,8 +168,9 @@ public class PlayerInfo : MonoBehaviour
         {
             velocity *= sprintMultiplier;
         }
-        velocity.y = rb.velocity.y;
 
+        velocity.y = rb.velocity.y;
+        if (!isGrounded) velocity.y -= 9.8f * Time.deltaTime;
         rb.velocity = velocity;
 
         this.transform.localEulerAngles = Vector3.up * mouseDir.y;
@@ -188,7 +196,19 @@ public class PlayerInfo : MonoBehaviour
         Debug.Log("Reloading");
         reloading = true;
         attackCooldown = 1f / reloadSpeed;
+        //ammo = Mathf.Min(magazineCap, totalAmmo);
+        mainCamera.transform.Find("SciFiGunLightBlack").gameObject.GetComponent<Renderer>().material = ReloadGun;
+        StartCoroutine("Reloading", attackCooldown);
+    }
+
+    IEnumerator Reloading(float reloadTime)
+    {
+        for (;reloadTime >= 0; reloadTime -= Time.deltaTime)
+        {
+            yield return null;
+        }
         ammo = Mathf.Min(magazineCap, totalAmmo);
+        mainCamera.transform.Find("SciFiGunLightBlack").gameObject.GetComponent<Renderer>().material = NormalGun;
     }
 
     public void Hurt(int damage, Vector3 enemyPos)
@@ -236,6 +256,11 @@ public class PlayerInfo : MonoBehaviour
         attackDamage += 1;
     }
 
+    public void ATKMulup(float amount)
+    {
+        attackMultiplier += amount;
+    }
+
     public void ASup()
     {
         attackSpeed += 0.25f;
@@ -276,6 +301,16 @@ public class PlayerInfo : MonoBehaviour
             yield return null;
         }
         Destroy(tmp);
+    }
+
+    IEnumerator FireEffect()
+    {
+        mainCamera.transform.Find("SciFiGunLightBlack").Find("MuzzleFlash").gameObject.SetActive(true);
+        for (int i = 0; i <= 2; i++)
+        {
+            yield return null;
+        }
+        mainCamera.transform.Find("SciFiGunLightBlack").Find("MuzzleFlash").gameObject.SetActive(false);
     }
 }
 

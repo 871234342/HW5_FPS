@@ -30,13 +30,13 @@ public class PlayerManager : MonoBehaviour
 
     private int difficulty = 0;
     private float gameTime = 0f;
-    [SerializeField] private int diffRiaseRate;
+    [SerializeField] private int diffRiseInverval = 60;
 
     public static bool gamePaused = false;
     public static bool pauseMeunOpened = false;
 
-    [SerializeField] private int exitTime;
-    [SerializeField] private bool exitWarning;
+    private int exitTime;
+    private bool exitWarning;
     [SerializeField] private Vector3 exitPos;
     private GameObject tmpExit;
     private GameObject tmpPreExit;
@@ -45,12 +45,10 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float spawnInterval = 10f;
     [SerializeField] private Vector2 spawnDistance;
     private int spawnAmount = 2;
-    private float spawnRange = 4f;
+    [SerializeField] private float spawnRange = 4f;
     private float spawnCooldown;
     private float spawnChance;
     [SerializeField] private bool spawnable = true;
-
-    
 
     private void Start()
     {
@@ -107,10 +105,10 @@ public class PlayerManager : MonoBehaviour
 
         // adjust difficulty
         gameTime += Time.deltaTime;
-        if (gameTime >= 10)
+        if (gameTime >= diffRiseInverval)
         {
             difficulty++;
-            //Debug.Log("Difficulty raised to " + difficulty);
+            spawnAmount = difficulty * 2;
             gameTime = 0;
         }
 
@@ -137,19 +135,28 @@ public class PlayerManager : MonoBehaviour
                 Vector3 spawnpoint =
                     new Vector3(
                         Random.Range(spawnCenter.x - spawnRange, spawnCenter.x + spawnRange),
-                        0,
+                        -500,
                         Random.Range(spawnCenter.y - spawnRange, spawnCenter.y + spawnRange)
                         );
-                spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f;
+                spawnpoint.y = Terrain.activeTerrain.SampleHeight(spawnpoint) + 0.1f - 200f;
+                Debug.Log("Spawn At " + spawnpoint);
 
                 float rand = Random.Range(0, enemiesSpawnTotal);
                 int index = 0;
                 for (; index < enemies.Count; index++)
                 {
                     if (rand <= enemiesSpawnRatio[index]) break;
+
                 }
                 GameObject newSpawn = Instantiate(enemies[index], spawnpoint, Quaternion.identity);
-                newSpawn.GetComponent<EnemyInfo>().level = difficulty;
+                if (newSpawn.GetComponent<EnemyInfo>() != null)
+                {
+                    newSpawn.GetComponent<EnemyInfo>().level = difficulty;
+                }
+                else
+                {
+                    newSpawn.GetComponent<EnemyControl>().level = difficulty;
+                }
             }
         }
 

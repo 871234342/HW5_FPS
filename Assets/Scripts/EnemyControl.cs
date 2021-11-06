@@ -8,7 +8,7 @@ public class EnemyControl : MonoBehaviour
     public float detectRadius = 7f;
     public float chaseRadius = 21f;
     public int baseAttackDamage = 10;
-    [SerializeField] private int level;
+    [SerializeField] public int level;
     private int attackDamage;
 
     private float attackInterval = 1f;
@@ -19,7 +19,7 @@ public class EnemyControl : MonoBehaviour
     GameObject target;
     Animator animator;
     [SerializeField] public int baseHealth = 100;
-    private int HP;
+    [SerializeField] private int HP;
     private float deathInterval;
 
     [SerializeField] bool isDead = false;
@@ -65,6 +65,7 @@ public class EnemyControl : MonoBehaviour
     void Update()
     {
         if (PlayerManager.gamePaused) return;
+        if (isDead) return;
 
         if (isGrounded)
         {
@@ -77,7 +78,6 @@ public class EnemyControl : MonoBehaviour
             speed.y -= 9.8f * Time.deltaTime;
             agent.enabled = false;
             isGrounded = IsGrounded();
-            Debug.Log("" + isGrounded + "/" + speed);
             return;
         }
 
@@ -137,7 +137,7 @@ public class EnemyControl : MonoBehaviour
     public void Hurt(int damage)
     {
         if (isDead) return;
-        //Debug.Log(this.name + " take " + damage + " damege.");
+        Debug.Log(this.name + ": " + HP + "\\" + (int)(baseHealth * (1 + level * 0.2f)));
         HP -= damage;
         if (HP <= 0)
         {
@@ -160,6 +160,8 @@ public class EnemyControl : MonoBehaviour
         drop.GetComponent<LootInfo>().resource = Random.Range(10, 20) * (level + 1);
 
         animator.SetTrigger("Dead");
+        isDead = true;
+        col.enabled = false;
         Destroy(gameObject, deathInterval);
     }
 
