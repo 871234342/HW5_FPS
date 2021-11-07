@@ -32,6 +32,9 @@ public class EnemyControl : MonoBehaviour
     Rigidbody rb;
     Collider col;
 
+    public AudioClip attack;
+    AudioSource audio;
+
 
     // Start is called before the first frame update
     void Start()
@@ -48,6 +51,8 @@ public class EnemyControl : MonoBehaviour
         detectRadius *= (level + 1) * 0.2f;
         chaseRadius *= (level + 1) * 0.3f;
         attackDamage = (int)(baseAttackDamage * (1 + level * 0.15f));
+
+        audio = GetComponent<AudioSource>();
 
         if (animator == null) return;
         AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
@@ -139,7 +144,12 @@ public class EnemyControl : MonoBehaviour
     void Attack(int attackDamage)
     {
         target.GetComponent<PlayerInfo>().Hurt(attackDamage, transform.position);
+
+        audio.Play();
+
         if (animator != null) animator.SetTrigger("Attack");
+
+
     }
 
     public void Hurt(int damage)

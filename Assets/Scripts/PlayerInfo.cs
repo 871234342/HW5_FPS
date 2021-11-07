@@ -25,6 +25,9 @@ public class PlayerInfo : MonoBehaviour
     public int maxHealth = 100;
     public int health = 100;
 
+    public AudioClip gunsound;
+    AudioSource audio;
+
     [SerializeField] GameObject UI;
     [SerializeField] GameObject deadScreen;
     [SerializeField] GameObject HitEffect;
@@ -52,6 +55,8 @@ public class PlayerInfo : MonoBehaviour
     void Start()
     {
         mouseDir = Vector3.zero;
+
+        audio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -117,6 +122,9 @@ public class PlayerInfo : MonoBehaviour
             }
             else
             {
+
+                audio.Play();
+
                 ammo--;
                 totalAmmo--;
                 attackCooldown = 1f / attackSpeed;

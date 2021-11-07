@@ -20,6 +20,9 @@ public class ExploderControl : MonoBehaviour
     NavMeshAgent agent;
     GameObject target;
 
+    public AudioClip explode;
+    AudioSource audio;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +33,9 @@ public class ExploderControl : MonoBehaviour
         blastDamage = (int)(baseBlastDamage * (1 + level * 0.15f));
         detectRadius *= (level + 1) * 0.2f;
         chaseRadius *= (level + 1) * 0.3f;
+
+        audio = GetComponent<AudioSource>();
+
     }
 
     // Update is called once per frame
@@ -137,6 +143,8 @@ public class ExploderControl : MonoBehaviour
         GetComponent<Animation>().Play("special");
         float scale = 1f;
         Vector3 originalScale = transform.localScale;
+
+        audio.Play();
 
         for (;; scale += 0.3f * Time.deltaTime / explodeTime)
         {
