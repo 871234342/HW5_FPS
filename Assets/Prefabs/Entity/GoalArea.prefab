@@ -60,8 +60,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6845cdc0a9d1b774eb9432b6797e96c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UI: {fileID: 0}
-  WinScreen: {fileID: 0}
 --- !u!1 &540197157636599204
 GameObject:
   m_ObjectHideFlags: 0
@@ -230,7 +228,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 10
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -927,7 +925,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 40
+      scalar: 60
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -4968,7 +4966,7 @@ ParticleSystemForceField:
     m_DirectionCurveY:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 26
+      scalar: 28
       minScalar: 0
       maxCurve:
         serializedVersion: 2

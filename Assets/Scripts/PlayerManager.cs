@@ -45,6 +45,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Vector2 boundary;
     [SerializeField] private float spawnInterval = 10f;
     [SerializeField] private Vector2 spawnDistance;
+    public int baseSpawnAmount = 2;
     private int spawnAmount = 2;
     [SerializeField] private float spawnRange = 4f;
     private float spawnCooldown;
@@ -56,7 +57,7 @@ public class PlayerManager : MonoBehaviour
     {
         spawnCooldown = spawnInterval;
         exitWarning = false;
-        exitTime = Random.Range(480, 600);
+        exitTime = Random.Range(300, 360);
         boundary.x -= spawnDistance.y;
         boundary.y -= spawnDistance.y;
 
@@ -82,6 +83,8 @@ public class PlayerManager : MonoBehaviour
 
         // initial spawn
         InitSpawn(initSpawn);
+        string[] story = { "Can You hear me? Good.", "I'm coming for your rescue.", "Hang in there. OK?" };
+        StartCoroutine("ShowWarning", story);
     }
 
     private void Update()
@@ -91,7 +94,6 @@ public class PlayerManager : MonoBehaviour
             if (pauseMeunOpened)
             {
                 gamePaused = false;
-                //Cursor.lockState = CursorLockMode.Locked;
                 StartCoroutine("LockCursor");
                 pauseMeun.SetActive(false);
                 Debug.Log("Lock");
@@ -119,7 +121,7 @@ public class PlayerManager : MonoBehaviour
         if (gameTime >= diffRiseInverval)
         {
             difficulty++;
-            spawnAmount = difficulty * 2;
+            spawnAmount = baseSpawnAmount * (difficulty + 1);
             gameTime = 0;
         }
 
@@ -131,60 +133,74 @@ public class PlayerManager : MonoBehaviour
         }
 
         // spawn exit point
-        if ((int)Time.timeSinceLevelLoad == exitTime - 30 && !exitWarning)
+        if ((int)Time.timeSinceLevelLoad == exitTime - 60 && !exitWarning)
         {
             exitPos = new Vector3(Random.Range(-boundary.x, boundary.x), 0, Random.Range(-boundary.y, boundary.y));
-            exitPos.y = Terrain.activeTerrain.SampleHeight(exitPos);
+            exitPos.y = Terrain.activeTerrain.SampleHeight(exitPos) - 200;
             tmpPreExit = Instantiate(PreExit, exitPos, Quaternion.identity);
-            StartCoroutine("ShowWarning");
+            string[] story = {"I'll be there in 1 minute.", "You should see the smoke at the exit point." };
+            StartCoroutine("ShowWarning", story);
         }
         if ((int)Time.timeSinceLevelLoad == exitTime && !exitWarning)
         {
             exitWarning = true;
             Destroy(tmpPreExit);
             tmpExit = Instantiate(Exit, exitPos, Quaternion.identity);
+            string[] story = {"I can only stay here for 2 minutes.", "Be quick!" };
+            StartCoroutine("ShowWarning", story);
         }
-        if ((int)Time.timeSinceLevelLoad == exitTime + 60 && exitWarning)
+        if ((int)Time.timeSinceLevelLoad == exitTime + 90)
+        {
+            string[] story = {"I didn't see you there.", "Hurry the fuck up!" };
+            StartCoroutine("ShowWarning", story);
+        }
+        if ((int)Time.timeSinceLevelLoad == exitTime + 120 && exitWarning)
         {
             exitWarning = false;
             Destroy(tmpExit);
             exitTime += Random.Range(240, 300);
+            string[] story = {"I have to bail now", "I'll let you know when I'm back again." };
+            StartCoroutine("ShowWarning", story);
         }
     }
 
-    IEnumerator ShowWarning()
+    IEnumerator ShowWarning(string[] story)
     {
+        //string[] story = { "I'll be there in 1 minute", "You should see the smoke at the extraction point"};
         exitWarning = true;
         // fade in warning message in 1 second
         UI.transform.Find("Exit").gameObject.SetActive(true);
         Text txt = UI.transform.Find("Exit").gameObject.GetComponent<Text>();
-        txt.text = "Evacuation Availiable Soon";
         Color32 txtColor = txt.color;
-        for (float alpha = 0; alpha <= 255; alpha += 255 * Time.deltaTime)
+        foreach (string line in story)
         {
-            txtColor.a = (byte)alpha;
-            txt.color = txtColor;
-            yield return null;
-        }
+            txt.text = line;
+            // fade in warning message in 1 second
+            for (float alpha = 0; alpha <= 255; alpha += 255 * Time.deltaTime)
+            {
+                txtColor.a = (byte)alpha;
+                txt.color = txtColor;
+                yield return null;
+            }
 
-        // display for 2 seconds
-        for (float timer = 0; timer <= 2; timer += Time.deltaTime)
-        {
-            yield return null;
-        }
+            // display for 2 seconds
+            for (float timer = 0; timer <= 2; timer += Time.deltaTime)
+            {
+                yield return null;
+            }
 
-        // fade out in 1 second
-        for (float alpha = 255; alpha >= 0 ; alpha -= 255 * Time.deltaTime)
-        {
-            txtColor.a = (byte)alpha;
-            txt.color = txtColor;
-            yield return null;
+            // fade out in 1 second
+            for (float alpha = 255; alpha >= 0; alpha -= 255 * Time.deltaTime)
+            {
+                txtColor.a = (byte)alpha;
+                txt.color = txtColor;
+                yield return null;
+            }
         }
-        //exitWarning = false;
         UI.transform.Find("Exit").gameObject.SetActive(false);
         exitWarning = false;
     }
-
+    
     IEnumerator LockCursor()
     {
         yield return new WaitForEndOfFrame();

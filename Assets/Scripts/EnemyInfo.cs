@@ -9,7 +9,7 @@ public class EnemyInfo : MonoBehaviour
     public int level = 0;
     private int HP;
 
-    [SerializeField] bool isDead = false;
+    public bool isDead = false;
     [SerializeField] LayerMask terrainMask;
     [SerializeField] private Vector3 speed;
     [SerializeField] bool isGrounded;
@@ -66,7 +66,7 @@ public class EnemyInfo : MonoBehaviour
         }
     }
 
-    public void Dead(bool ignore = false)
+    public void Dead(bool ignore = false, float delay = 0f)
     {
         // trigger special behavior
         if (this.GetComponent<ExploderControl>() != null && !ignore)
@@ -79,7 +79,12 @@ public class EnemyInfo : MonoBehaviour
         drop = Instantiate(loot, transform.position, Quaternion.identity);
         drop.GetComponent<LootInfo>().resource = Random.Range(5, 10) * (level + 1);
 
-        Destroy(gameObject);
+        if (delay == 0) Destroy(gameObject);
+        else
+        {
+            Destroy(gameObject, delay);
+            transform.Find("mdl").gameObject.SetActive(false);
+        }
     }
 
     public void ExplodeForce(float explosionForce, Vector3 explosionPosition, float radius)

@@ -48,8 +48,8 @@ public class EnemyControl : MonoBehaviour
         HP = (int)(baseHealth * (1 + level * 0.2f));
         animator = GetComponent<Animator>();
         if (agent.enabled) agent.destination = target.transform.position;
-        detectRadius *= (level + 1) * 0.2f;
-        chaseRadius *= (level + 1) * 0.3f;
+        detectRadius *= 1 + (level + 1) * 0.2f;
+        chaseRadius *= 1 + (level + 1) * 0.3f;
         attackDamage = (int)(baseAttackDamage * (1 + level * 0.15f));
 
         audio = GetComponent<AudioSource>();
@@ -175,7 +175,7 @@ public class EnemyControl : MonoBehaviour
 
         GameObject drop;
         drop = Instantiate(loot, transform.position, Quaternion.identity);
-        drop.GetComponent<LootInfo>().resource = Random.Range(5, 15) * (level + 1);
+        drop.GetComponent<LootInfo>().resource = Random.Range(10, 18) * (level + 1);
 
         if (animator != null) animator.SetTrigger("Dead");
         isDead = true;
@@ -192,7 +192,7 @@ public class EnemyControl : MonoBehaviour
         float push = (1 - distance / radius) * explosionForce;
 
         speed = dir * push;
-        speed.y = explosionForce * ((1 - distance / radius));
+        speed.y = explosionForce * ((1 - distance / radius)) + 6f;
         Vector3 pos = transform.position;
         pos.y += 0.2f;
         transform.position = pos;
@@ -206,8 +206,7 @@ public class EnemyControl : MonoBehaviour
         boxCenter.y -= col.bounds.size.y * 0.5f;
 
         Vector3 bound = col.bounds.size / 2;
-        bound.y = 0.01f;
-        //Debug.Log("Center: " + boxCenter + ", bound: " + bound + ", Result: " + Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask));
+        bound.y = 0.1f;
         return Physics.CheckBox(boxCenter, bound, Quaternion.identity, terrainMask);
     }
 
@@ -231,6 +230,5 @@ public class EnemyControl : MonoBehaviour
             }
             yield return new WaitForSeconds(5f);
         }
-
     }
 }

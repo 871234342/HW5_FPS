@@ -31,8 +31,8 @@ public class ExploderControl : MonoBehaviour
         agent.destination = target.transform.position;
         level = this.gameObject.GetComponent<EnemyInfo>().level;
         blastDamage = (int)(baseBlastDamage * (1 + level * 0.15f));
-        detectRadius *= (level + 1) * 0.2f;
-        chaseRadius *= (level + 1) * 0.3f;
+        detectRadius *= 1 + (level + 1) * 0.2f;
+        chaseRadius *= 1 + (level + 1) * 0.3f;
 
         audio = GetComponent<AudioSource>();
 
@@ -112,10 +112,17 @@ public class ExploderControl : MonoBehaviour
         GameObject effect =  Instantiate(PlayerManager.instance.explodeEffect, transform.position, Quaternion.identity);
         effect.SetActive(true);
 
+        PlayerManager.instance.gameObject.GetComponent<AudioSource>().Play();
+
         Collider[] victims = Physics.OverlapSphere(transform.position, blastRadius, explodeMask);
         foreach (Collider hit in victims)
         {
             float distance = Vector3.Distance(transform.position, hit.gameObject.transform.position);
+            if (distance == 0)
+            {
+                Debug.Log("SELF");
+                break;
+            }
             distance = Mathf.Min(distance, blastRadius);
             if (hit.tag == "Player")
             {
@@ -143,8 +150,6 @@ public class ExploderControl : MonoBehaviour
         GetComponent<Animation>().Play("special");
         float scale = 1f;
         Vector3 originalScale = transform.localScale;
-
-        audio.Play();
 
         for (;; scale += 0.3f * Time.deltaTime / explodeTime)
         {
